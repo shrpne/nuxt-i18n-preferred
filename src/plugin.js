@@ -1,6 +1,7 @@
 /* eslint-disable import/no-unresolved */
 
 import Vue from 'vue';
+import './middleware';
 import { I18N_ROUTE_NAME_SEPARATOR } from './variables';
 
 Vue.mixin({

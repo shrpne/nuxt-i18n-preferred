@@ -24,14 +24,14 @@ Register Nuxt module
 // nuxt-config.js
 module.exports = {
     modules: [
-        ['nuxt-i18n', {
-            // options
-        }],
         ['nuxt-i18n-preferred', {
             routesNameSeparator: '___',
             languageCookieKey: 'nuxt_i18n_preferred_locale',
             detectBrowserLanguage: false,        
-        }]
+        }],
+        ['nuxt-i18n', {
+            // options
+        }],
     ],
 };
 ```
