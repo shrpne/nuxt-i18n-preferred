@@ -30,7 +30,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
     // redirect only on root page, on other pages just set current locale as preferred
     if (isRootPath && preferredLocale && locales.indexOf(preferredLocale) !== -1) {
         return setLocale(preferredLocale);
-    } if (isRootPath && DETECT_BROWSER) {
+    } else if (isRootPath && DETECT_BROWSER) {
         const browserLocale = getBrowserLocale();
         if (browserLocale && locales.indexOf(browserLocale) !== -1) {
             return setLocale(browserLocale);
@@ -43,6 +43,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
 
     // redirect to saved locale
     function setLocale(newLocale) {
+        // @TODO export saveLocale for use in lang switcher
         setCookie(newLocale);
         store.commit('i18n/preferred/SET_LOCALE', newLocale);
 
@@ -68,7 +69,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
     function getCookie() {
         if (process.client) {
             return Cookies.get(LANGUAGE_COOKIE_KEY);
-        } if (req && typeof req.headers.cookie !== 'undefined') {
+        } else if (req && typeof req.headers.cookie !== 'undefined') {
             const cookies = req.headers && req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
             return cookies[LANGUAGE_COOKIE_KEY];
         }
@@ -87,7 +88,22 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
                 expires: new Date(date.setDate(date.getDate() + 365)),
                 domain: req.headers.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
             });
-            res.setHeader('Set-Cookie', redirectCookie);
+            addResCookie(res, redirectCookie);
         }
     }
 };
+
+function addResCookie(res, serializedCookie) {
+    if (!res) {
+        return;
+    }
+
+    let cookieHeader = res.getHeader('Set-Cookie') || [];
+    // cookie header to array
+    if (!Array.isArray(cookieHeader)) {
+        cookieHeader = [cookieHeader];
+    }
+
+    cookieHeader.push(serializedCookie);
+    res.setHeader('Set-Cookie', cookieHeader);
+}
