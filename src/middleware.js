@@ -1,4 +1,5 @@
 /* eslint-disable import/no-unresolved */
+import Vue from 'vue';
 import cookie from 'cookie';
 import Cookies from 'js-cookie';
 import { getLocaleCodes } from 'nuxt-i18n/src/helpers/utils';
@@ -41,6 +42,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
 
 
     // expose API
+    Vue.prototype.$i18nSetPreferredLocale = setLocale;
     app.i18nSetPreferredLocale = setLocale;
 
     return false;

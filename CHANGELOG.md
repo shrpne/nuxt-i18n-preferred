@@ -1,4 +1,8 @@
-## 0.0.4 - 2019-11-18
+## 0.1.0 - 2019-11-19
+- **BREAKING** add $ prefix to $preferredPath and $hasLocalizedRoute exposed on Vue
+- inject $i18nSetPreferredLocale on Vue instance too
+
+## 0.0.4 - 2019-11-19
 - expose SetPreferredLocale function
 
 ## 0.0.3 - 2019-11-18

@@ -6,8 +6,8 @@ import { I18N_ROUTE_NAME_SEPARATOR } from './variables';
 
 Vue.mixin({
     methods: {
-        preferredPath: preferredPathFactory('$store', '$i18n'),
-        hasLocalizedRoute: hasLocalizedRouteFactory('$router'),
+        $preferredPath: preferredPathFactory('$store', '$i18n'),
+        $hasLocalizedRoute: hasLocalizedRouteFactory('$router'),
     },
 });
 
