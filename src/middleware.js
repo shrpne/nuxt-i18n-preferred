@@ -15,7 +15,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
         return false;
     }
 
-    // process only on first load
+    // execute only on first load
     if (process.client && isExecuted) {
         return false;
     }
@@ -39,11 +39,14 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
         return setLocale(app.i18n.locale);
     }
 
+
+    // expose API
+    app.i18nSetPreferredLocale = setLocale;
+
     return false;
 
     // redirect to saved locale
     function setLocale(newLocale) {
-        // @TODO export saveLocale for use in lang switcher
         setCookie(newLocale);
         store.commit('i18n/preferred/SET_LOCALE', newLocale);
 
