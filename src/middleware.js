@@ -1,5 +1,4 @@
 /* eslint-disable import/no-unresolved */
-import Vue from 'vue';
 import cookie from 'cookie';
 import Cookies from 'js-cookie';
 import { getLocaleCodes } from 'nuxt-i18n/src/helpers/utils';
@@ -9,9 +8,7 @@ import middleware from '../middleware'; // Nuxt's middleware
 
 let isExecuted = false;
 
-middleware['i18n-preferred'] = function i18nPreferredMiddleware({
-    app, req, res, route, store, redirect, isHMR,
-}) {
+middleware['i18n-preferred'] = function i18nPreferredMiddleware({ app, req, res, route, store, redirect, isHMR }) {
     if (isHMR) {
         return false;
     }
@@ -22,9 +19,11 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
     }
     isExecuted = true;
 
+    const setLocale = NuxtContextProxy({ app, req, res, route, store, redirect }, setPreferredLocale);
+
     // Helpers
     const locales = getLocaleCodes(app.i18n.locales);
-    const preferredLocale = getCookie();
+    const preferredLocale = getCookie({ req });
     const isRootPath = route.path === '/';
 
     // @TODO redirect on any page
@@ -32,7 +31,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
     if (isRootPath && preferredLocale && locales.indexOf(preferredLocale) !== -1) {
         return setLocale(preferredLocale);
     } else if (isRootPath && DETECT_BROWSER) {
-        const browserLocale = getBrowserLocale();
+        const browserLocale = getBrowserLocale({ req });
         if (browserLocale && locales.indexOf(browserLocale) !== -1) {
             return setLocale(browserLocale);
         }
@@ -40,63 +39,102 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
         return setLocale(app.i18n.locale);
     }
 
+    return false;
+};
 
-    // expose API
-    Vue.prototype.$i18nSetPreferredLocale = setLocale;
-    app.i18nSetPreferredLocale = setLocale;
+
+export function VueInstanceProxy(targetFunction) {
+    return function () {
+        const proxy = {
+            req: process.server ? this.$ssrContext.req : null,
+            res: process.server ? this.$ssrContext.res : null,
+            route: this.$route,
+            router: this.$router,
+            redirect: this.$router.push,
+            store: this.$store,
+            i18n: this.$i18n,
+            getRouteBaseName: this.getRouteBaseName,
+            localePath: this.localePath,
+            i18nHasLocalizedRoute: this.$i18nHasLocalizedRoute,
+        };
+
+        return targetFunction.apply(proxy, arguments);
+    };
+}
+
+export function NuxtContextProxy(context, targetFunction) {
+    return function () {
+        const { app = {}, req, res, route, store, redirect } = context;
+
+        const proxy = {
+            req: process.server ? req : null,
+            res: process.server ? res : null,
+            route,
+            router: app.router,
+            redirect,
+            store,
+            i18n: app.i18n,
+            getRouteBaseName: app.getRouteBaseName,
+            localePath: app.localePath,
+            i18nHasLocalizedRoute: app.i18nHasLocalizedRoute,
+        };
+
+        return targetFunction.apply(proxy, arguments);
+    };
+}
+
+
+// redirect to saved locale
+export function setPreferredLocale(newLocale) {
+    const { req, res, route, store, redirect, i18n, getRouteBaseName, localePath, i18nHasLocalizedRoute } = this;
+
+    setCookie(newLocale, { res, req });
+    store.commit('i18n/preferred/SET_LOCALE', newLocale);
+
+    const baseRoute = route && route.name && { name: getRouteBaseName(route) };
+    if (newLocale !== i18n.locale && baseRoute && i18nHasLocalizedRoute(baseRoute, newLocale)) {
+        return redirect(localePath({ ...route, ...baseRoute }, newLocale));
+    }
 
     return false;
+}
 
-    // redirect to saved locale
-    function setLocale(newLocale) {
-        setCookie(newLocale);
-        store.commit('i18n/preferred/SET_LOCALE', newLocale);
-
-        const baseRoute = route && route.name && { name: app.getRouteBaseName(route) };
-        if (newLocale !== app.i18n.locale && baseRoute && app.hasLocalizedRoute(baseRoute, newLocale)) {
-            return redirect(app.localePath({ ...route, ...baseRoute }, newLocale));
-        }
-
-        return false;
+// Get browser language either from navigator if running in mode SPA, or from the headers
+function getBrowserLocale({ req }) {
+    let browserLocale = null;
+    if (process.client && typeof navigator !== 'undefined' && navigator.language) {
+        browserLocale = navigator.language.toLocaleLowerCase().substring(0, 2);
+    } else if (req && typeof req.headers['accept-language'] !== 'undefined') {
+        browserLocale = req.headers['accept-language'].split(',')[0].toLocaleLowerCase().substring(0, 2);
     }
+    return browserLocale;
+}
 
-    // Get browser language either from navigator if running in mode SPA, or from the headers
-    function getBrowserLocale() {
-        let browserLocale = null;
-        if (process.client && typeof navigator !== 'undefined' && navigator.language) {
-            browserLocale = navigator.language.toLocaleLowerCase().substring(0, 2);
-        } else if (req && typeof req.headers['accept-language'] !== 'undefined') {
-            browserLocale = req.headers['accept-language'].split(',')[0].toLocaleLowerCase().substring(0, 2);
-        }
-        return browserLocale;
+function getCookie({ req }) {
+    if (process.client) {
+        return Cookies.get(LANGUAGE_COOKIE_KEY);
+    } else if (req && typeof req.headers.cookie !== 'undefined') {
+        const cookies = req.headers && req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
+        return cookies[LANGUAGE_COOKIE_KEY];
     }
+    return null;
+}
 
-    function getCookie() {
-        if (process.client) {
-            return Cookies.get(LANGUAGE_COOKIE_KEY);
-        } else if (req && typeof req.headers.cookie !== 'undefined') {
-            const cookies = req.headers && req.headers.cookie ? cookie.parse(req.headers.cookie) : {};
-            return cookies[LANGUAGE_COOKIE_KEY];
-        }
-        return null;
+function setCookie(value, { res, req }) {
+    const date = new Date();
+    if (process.client) {
+        Cookies.set(LANGUAGE_COOKIE_KEY, value, {
+            expires: new Date(date.setDate(date.getDate() + 365)),
+            domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
+        });
+    } else if (res && req) {
+        const redirectCookie = cookie.serialize(LANGUAGE_COOKIE_KEY, value, {
+            expires: new Date(date.setDate(date.getDate() + 365)),
+            domain: req.headers.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
+        });
+        addResCookie(res, redirectCookie);
     }
-
-    function setCookie(value) {
-        const date = new Date();
-        if (process.client) {
-            Cookies.set(LANGUAGE_COOKIE_KEY, value, {
-                expires: new Date(date.setDate(date.getDate() + 365)),
-                domain: window.location.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
-            });
-        } else if (res && req) {
-            const redirectCookie = cookie.serialize(LANGUAGE_COOKIE_KEY, value, {
-                expires: new Date(date.setDate(date.getDate() + 365)),
-                domain: req.headers.host.split('.').slice(-2).join('.').replace(/:\d+$/, ''),
-            });
-            addResCookie(res, redirectCookie);
-        }
-    }
-};
+}
 
 function addResCookie(res, serializedCookie) {
     if (!res) {

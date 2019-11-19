@@ -1,3 +1,6 @@
+## 0.1.2 - 2019-11-19
+- fix errors and refactor
+
 ## 0.1.1 - 2019-11-19
 - fix $hasLocalizedRoute usage inside $preferredPath
 - update deps
