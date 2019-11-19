@@ -3,10 +3,11 @@ const { resolve, join } = require('path');
 const MODULE_DIR = 'nuxt-i18n-preferred';
 
 export default function i18nPreferred(userOptions) {
-    const templatesOptions = Object.assign({
+    const templatesOptions = {
         languageCookieKey: 'nuxt_i18n_preferred_locale',
         detectBrowserLanguage: false,
-    }, userOptions);
+        ...userOptions,
+    };
 
     this.addTemplate({
         src: resolve(__dirname, 'variables.ejs'),

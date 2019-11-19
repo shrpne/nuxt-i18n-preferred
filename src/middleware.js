@@ -54,7 +54,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({
 
         const baseRoute = route && route.name && { name: app.getRouteBaseName(route) };
         if (newLocale !== app.i18n.locale && baseRoute && app.hasLocalizedRoute(baseRoute, newLocale)) {
-            return redirect(app.localePath(Object.assign({}, route, baseRoute), newLocale));
+            return redirect(app.localePath({ ...route, ...baseRoute }, newLocale));
         }
 
         return false;

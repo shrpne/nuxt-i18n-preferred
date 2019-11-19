@@ -1,3 +1,7 @@
+## 0.1.1 - 2019-11-19
+- fix $hasLocalizedRoute usage inside $preferredPath
+- update deps
+
 ## 0.1.0 - 2019-11-19
 - **BREAKING** add $ prefix to $preferredPath and $hasLocalizedRoute exposed on Vue
 - inject $i18nSetPreferredLocale on Vue instance too

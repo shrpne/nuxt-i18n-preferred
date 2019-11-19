@@ -6,7 +6,7 @@ import { I18N_ROUTE_NAME_SEPARATOR } from './variables';
 
 Vue.mixin({
     methods: {
-        $preferredPath: preferredPathFactory('$store', '$i18n'),
+        $preferredPath: preferredPathFactory('$store', '$i18n', '$hasLocalizedRoute'),
         $hasLocalizedRoute: hasLocalizedRouteFactory('$router'),
     },
 });
@@ -15,7 +15,7 @@ export default ({ app, store } /* inject */) => {
     /* eslint-disable no-param-reassign */
     // Set `i18n` instance on `app`
     // This way we can use it in middleware and pages `asyncData`/`fetch`
-    app.preferredPath = preferredPathFactory('store', 'i18n');
+    app.preferredPath = preferredPathFactory('store', 'i18n', 'hasLocalizedRoute');
     app.hasLocalizedRoute = hasLocalizedRouteFactory('router');
 
     // Register Vuex module
@@ -35,7 +35,7 @@ export default ({ app, store } /* inject */) => {
 };
 
 
-function preferredPathFactory(storePath, i18nPath) {
+function preferredPathFactory(storePath, i18nPath, hasLocalizedRoutePath) {
     /**
      * Enhanced .localePath()
      * Check preferredLocale first, returns initial route if no localized route found
@@ -67,7 +67,7 @@ function preferredPathFactory(storePath, i18nPath) {
             route = { name: route };
         }
 
-        const locale = localesToCheck.find(item => this.hasLocalizedRoute(route, item));
+        const locale = localesToCheck.find((item) => this[hasLocalizedRoutePath](route, item));
 
         if (locale) {
             return this.localePath(route, locale);
@@ -87,6 +87,6 @@ function hasLocalizedRouteFactory(routerPath) {
         const router = this[routerPath];
 
         const name = route.name + I18N_ROUTE_NAME_SEPARATOR + locale;
-        return router.options.routes.some(item => item.name === name);
+        return router.options.routes.some((item) => item.name === name);
     };
 }
