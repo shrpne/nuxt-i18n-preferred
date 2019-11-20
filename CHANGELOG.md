@@ -1,3 +1,7 @@
+## 0.2.0 - 2019-11-20
+- **BREAKING** rename `preferredPath` to `i18nGetPreferredPath`
+- **BREAKING** rename `hasLocalizedRoute` to `i18nHasLocalizedRoute`
+
 ## 0.1.2 - 2019-11-19
 - fix errors and refactor
 
