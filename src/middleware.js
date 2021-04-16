@@ -1,9 +1,9 @@
 /* eslint-disable import/no-unresolved */
+/* eslint-disable import/extensions */
 import cookie from 'cookie';
 import Cookies from 'js-cookie';
-import { getLocaleCodes } from 'nuxt-i18n/src/helpers/utils';
 import { LANGUAGE_COOKIE_KEY, DETECT_BROWSER } from './variables';
-import middleware from '../middleware'; // Nuxt's middleware
+import middleware from '../middleware.js'; // Nuxt's middleware
 
 
 let isExecuted = false;
@@ -22,17 +22,16 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({ app, req, res,
     const setLocale = NuxtContextProxy({ app, req, res, route, store, redirect }, setPreferredLocale);
 
     // Helpers
-    const locales = getLocaleCodes(app.i18n.locales);
     const preferredLocale = getCookie({ req });
     const isRootPath = route.path === '/';
 
     // @TODO redirect on any page
     // redirect only on root page, on other pages just set current locale as preferred
-    if (isRootPath && preferredLocale && locales.indexOf(preferredLocale) !== -1) {
+    if (isRootPath && preferredLocale && app.i18n.localeCodes.indexOf(preferredLocale) !== -1) {
         return setLocale(preferredLocale);
     } else if (isRootPath && DETECT_BROWSER) {
         const browserLocale = getBrowserLocale({ req });
-        if (browserLocale && locales.indexOf(browserLocale) !== -1) {
+        if (browserLocale && app.i18n.localeCodes.indexOf(browserLocale) !== -1) {
             return setLocale(browserLocale);
         }
     } else if (!isRootPath) {
@@ -44,7 +43,7 @@ middleware['i18n-preferred'] = function i18nPreferredMiddleware({ app, req, res,
 
 
 export function VueInstanceProxy(targetFunction) {
-    return function () {
+    return function vueInstanceWrapped() {
         const proxy = {
             req: process.server ? this.$ssrContext.req : null,
             res: process.server ? this.$ssrContext.res : null,
@@ -63,7 +62,7 @@ export function VueInstanceProxy(targetFunction) {
 }
 
 export function NuxtContextProxy(context, targetFunction) {
-    return function () {
+    return function nuxtContextWrapped() {
         const { app = {}, req, res, route, store, redirect } = context;
 
         const proxy = {

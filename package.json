@@ -1,7 +1,7 @@
 {
   "name": "nuxt-i18n-preferred",
-  "version": "0.2.0",
-  "description": "Add $td() method to specify default value",
+  "version": "0.3.0",
+  "description": "Add preferred locale",
   "main": "src/module.js",
   "scripts": {
     "test": "npm run lint",
@@ -17,7 +17,7 @@
     "vue",
     "nuxt",
     "i18n",
-    "default"
+    "locale"
   ],
   "author": "shrpne <shrpne@gmail.com>",
   "license": "MIT",
@@ -27,17 +27,17 @@
   },
   "homepage": "https://github.com/shrpne/nuxt-i18n-preferred",
   "dependencies": {
-    "cookie": "^0.4.0",
+    "cookie": "^0.4.1",
     "js-cookie": "^2.2.1"
   },
   "devDependencies": {
-    "eslint": "^6",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
+    "eslint": "^7",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
     "pre-commit": "^1.2.2"
   },
   "peerDependencies": {
-    "vue": "^2.6.10",
-    "nuxt-i18n": "^6.4.0"
+    "vue": "^2",
+    "nuxt-i18n": "^6.22"
   }
 }

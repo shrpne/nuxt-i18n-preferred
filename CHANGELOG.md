@@ -1,3 +1,6 @@
+## 0.3.0 - 2021-04-16
+- update to support nuxt-i18n@6.22.0
+
 ## 0.2.0 - 2019-11-20
 - **BREAKING** rename `preferredPath` to `i18nGetPreferredPath`
 - **BREAKING** rename `hasLocalizedRoute` to `i18nHasLocalizedRoute`

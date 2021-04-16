@@ -1,8 +1,9 @@
 /* eslint-disable import/no-unresolved */
 
 import Vue from 'vue';
-import { setPreferredLocale, VueInstanceProxy, NuxtContextProxy } from './middleware';
+import { setPreferredLocale, VueInstanceProxy, NuxtContextProxy } from './middleware.js';
 
+// eslint-disable-next-line import/extensions
 import { I18N_ROUTE_NAME_SEPARATOR } from './variables';
 
 Vue.mixin({
